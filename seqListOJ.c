@@ -177,7 +177,7 @@ void merge2(int* nums1, int nums1Size, int m, int* nums2, int nums2Size, int n){
 }
 #define nums1Size 6
 #define nums2Size 3
-int main(){
+int main3(){
 	int nums1[] = { 1, 2, 8 };
 	int nums2[] = { 2, 4, 9 };
 	int m = sizeof(nums1) / sizeof(int);
@@ -199,21 +199,36 @@ int main(){
 	前面n-k逆转 --> 剩余元素进行逆转 --> 整体逆转
 
 */
-void rotate(int* nums, int numsSize, int k){
-	k %= numsSize;
-	int i = 0;
-	while (i < k){
-		nums[i] = nums[i];
+void part_reverse(int* begin, int* end){
+	int tmp;
+	for (; begin < end; begin++, end--){
+		tmp = *begin;
+		*begin = *end;
+		*end = tmp;
 	}
+}
+void rotate(int* nums, int numsSize, int k){
+
+	k %= numsSize;
+	part_reverse(nums, nums + k - 1);
+	part_reverse(nums + k, nums + numsSize - 1);
+	part_reverse(nums, nums + numsSize - 1);
 	
 }
-int main(){
+int main4(){
 	int nums[] = { 1, 2, 3, 4, 5, 6, 7 };
 	int numsSize = sizeof(nums) / sizeof(nums[0]);
 	int k = 0;
 	scanf("%d", &k);
+	for (int i = 0; i < numsSize; i++){
+		printf("%d ", nums[i]);
+	}
+	printf("\n");
 	rotate(nums, numsSize, k);
-
+	for (int i = 0; i < numsSize; i++){
+		printf("%d ", nums[i]);
+	}
+	printf("\n");
 	system("pause");
 	return 0;
 }
@@ -228,14 +243,76 @@ int main(){
 逐位相加,
 每一位的结果: 对应位的数字和 + 上一步的进位 --> 考虑是否有进位 --> 更新结果和进位
 获取整数的每一位数 %10/10 
+需考虑最高位的进位
 */
-
+void reverse(int* ret, int left, int right){
+	while (left < right){
+		int tmp = ret[left];
+		ret[left] = ret[right];
+		ret[right] = tmp;
+		++left;
+		--right;
+	}
+}
 int* addToArrayForm(int* A, int ASize, int K, int* returnSize){
+
+	// 新开空间, 保存结果
+	// 获取两数的最大长度
+	int klen = 0;
+	int tmp = K;
+	while (tmp){
+		++tmp;
+		tmp /= 10;
+	}
+	// 考虑进位的存放
+	int retSize = ASize > klen ? ASize + 1 : klen + 1;
+	int* ret = (int*)malloc(sizeof(int)* retSize);
+
 	int len = ASize - 1;
+	int step = 0;
+	int idx = 0;
 	while (len >= 0 || K > 0){
+		// 当前对应位的结果, 首先加上上一步的进位
+		ret[idx] = step;
 		// 逐位相加
 		if (len >= 0){
-
+			ret[idx] += A[len];
 		}
+		if (K > 0){
+			ret[idx] += K % 10;
+		}
+		//更新结果
+		if (ret[idx] > 9){
+			ret[idx] %= 10;
+			step = 1;
+		}
+		else{
+			step = 0;
+		}
+		// 保存当前位的结果
+		--len;
+		K /= 10;
+		++idx;
 	}
+	// 看最高位是否有进位
+	if (step == 1){
+		ret[idx++] = 1;
+	}
+	//逆转
+	reverse(ret, 0, idx - 1);
+	*returnSize = idx;
+	return ret;
+}
+int main(){
+	int A[] = { 1, 2, 0, 0 };
+	int K = 34;
+	int ASize = sizeof(A) / sizeof(A[0]);
+	int returnSize[] = {0};
+	for (int i = 0; i < ASize; i++){
+		printf("%d ", addToArrayForm(A, ASize, K, returnSize));
+	}
+	printf("\n");
+
+	system("pause");
+	return 0;
 }
